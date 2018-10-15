@@ -1,4 +1,3 @@
-
 #################################### Business Understanding #####################################
 # ElecKart is an e-commerce firm specialising in electronic products. Over the last one year,
 # they had spent a significant amount of money in marketing.
@@ -225,7 +224,7 @@ for(i in 1:length(sales_electronics_2$order_date)){
   
   else  {
     sales_electronics_2$Special_day[i] <- "0"
-  }
+  break}
 }
 
 typeof(sales_electronics_2$Special_day)
@@ -358,9 +357,6 @@ ggplot(merge_data2, aes(x=merge_data2$year_month, y=merge_data2$deliverybdays,co
 ggplot(merge_data2, aes(x=merge_data2$year_month, y=merge_data2$deliverycdays,colour=product_analytic_sub_category)) +geom_bar(stat = 'identity') + facet_wrap("product_analytic_sub_category")+  theme(axis.text.x = element_text(angle = 90))
 
 
-
-write.csv(merge_data2,"merge_data2.csv")
-
 str(merge_data2)
 
 
@@ -380,6 +376,9 @@ model_df$Other[which(is.na(model_df$Other))] <- 0
 
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
+range02 <- function(x){(x-mean(x))/sd(x)}
+
+
 model_df[,c(5:14)] <- range01(model_df[,c(5:14)])
 
 model_df$NPS <- as.numeric((model_df$NPS))
@@ -391,7 +390,7 @@ model_df$NPS <- range01(model_df$NPS)
 
 model_df[,c(16:23)] <-  range01(model_df[,c(16:23)])
 
-model_df[,c(24:25)] <- range01(model_df[,c(24:25)])
+model_df[,c(24:25)] <- range01(data.matrix(model_df[,c(24:25)]))
 
 
 # Modelling for cameraAccessory SUBCATEGORY
@@ -673,7 +672,7 @@ cor(test1$GMV,test1$test_GMV)^2
   
 # CameraTripod , ExtensionTube,Lens, Teleconverter as our driving variable in determiing the GMV.
 
-
+# getting SAdjusted R^2 as 0.42 and R as 0.65
 
 
 # Modelling for HomeAudio SUBCATEGORY
@@ -696,6 +695,9 @@ dummy_4<-dummy_4[,-1]
 
 model_df1a <- cbind(HomeAudio[,c(5:25)], dummy_3,dummy_4)
 str(model_df1a)
+
+
+model_df1a[,c(20:107)] <- range01(data.matrix(model_df1a[,c(20:107)]))
 
 # removing MRP due to highly correlated to GMV.
 
@@ -917,12 +919,12 @@ test2$test_GMV <- Predict_2
 cor(test2$GMV,test2$test_GMV)
 cor(test2$GMV,test2$test_GMV)^2
 
-# In final model we get `No.of units sold` + +discount + product_analytic_verticalBoomBox + 
+# In final model we get `No.of units sold`+discount + product_analytic_verticalBoomBox + 
 # product_analytic_verticalDJController + product_analytic_verticalHiFiSystem + 
  # product_analytic_verticalKaraokePlayer + product_analytic_verticalSoundMixer as our driving variable in determiing the GMV.
 # here we have considered the basic linear model whereas we have timestamped data available we can work 
 # over the adstock effect and find the driving variables in determining the GMV.
-
+# geeting 0.90 as adjusted R^2 and R as 0.95
 
 
 
@@ -1112,25 +1114,60 @@ cor(test3$GMV,test3$test_GMV)^2
 # here we have considered the basic linear model whereas we have timestamped data available we can work 
 # over the adstock effect and find the driving variables in determining the GMV.
 
-
+##################################################################################################
 # Multiplicative , Distributive, Koyck and Multiplicative + Distributive model
+##################################################################################################
+
+################################## Multiplicative Model ##########################################
+
+
+# Modelling for cameraAccessory SUBCATEGORY
+
+
+str(model_df1)
+
+# Looking at the structure of model_df1 we see that all values are positive but few columns
+# are having "0"s in it, which we need to remove  from it for logarithmic transformation.
+
+range02 <- function(x){(x-mean(x))/sd(x)}
+
+
+model_df1[,c(19:106)] <- range02(data.matrix(model_df1[,c(19:106)]))
+
+str(model_df1)
+
+# we see that though zeros have been removed from dataset, but negative is still there I would 
+# add "1" to the column so that my values comes out to be positive.
+
+model_df1[,c(19:106)] <- model_df1[,c(19:106)] + 1
+
+str(model_df1)
+
+# Now dataset seems to be fine for logarithmic transformation.
 
 
 
-# Multiplicative models
+
+# Divide you data in 70:30 
+
+train_m= (model_df1[c(1:664),])
+
+test_m = (model_df1[c(665:948),])
 
 
 # Develop the first model 
 
-model_1m <-lm(log(train1$GMV)~.,data=train1[,-1])
+str(train_m)
 
-summary(model_1m)
+model_1 <-lm(log(train_m$GMV)~.,data=train_m[,-1])
+summary(model_1)
 
 #-------------------------------------------------------------------------------------------
 
 # Apply the stepwise approach
 
-step <- stepAIC(model_1m, direction="both")
+step <- stepAIC(model_1, direction="both")
+
 
 
 
@@ -1145,31 +1182,743 @@ step
 plot(step)
 
 
-model_2 <- lm(formula = train$GMV ~ `No.of units sold` + `Payment type` + 
-                sla + discount + NPS + `Content Marketing` + `Online marketing` + 
+
+model_2 <- lm(formula = log(train_m$GMV) ~ `No.of units sold` + deliverybdays + 
+                deliverycdays + `Payment type` + sla + discount + NPS + TV + 
+                Digital + `Content Marketing` + `Online marketing` + Affiliates + 
                 product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
-                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraLEDLight + 
-                product_analytic_verticalCameraMount + product_analytic_verticalCameraRemoteControl + 
-                product_analytic_verticalCameraTripod + product_analytic_verticalExtensionTube + 
-                product_analytic_verticalFilter + product_analytic_verticalLens + 
-                product_analytic_verticalTeleconverter, data = train[, -1])
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter + product_analytic_verticalTelescope, 
+              data = train_m[, -1])
+
+summary(model_2)
+vif(model_2)
+
+# Remove deliverybdays
+
+
+model_3 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                deliverycdays + `Payment type` + sla + discount + NPS + TV + 
+                Digital + `Content Marketing` + `Online marketing` + Affiliates + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter + product_analytic_verticalTelescope, 
+              data = train_m[, -1])
+
+summary(model_3)
+vif(model_3)
+
+
+# Remove deliverycdays
+
+
+model_4 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                 `Payment type` + sla + discount + NPS + TV + 
+                Digital + `Content Marketing` + `Online marketing` + Affiliates + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter + product_analytic_verticalTelescope, 
+              data = train_m[, -1])
+
+summary(model_4)
+vif(model_4)
+
+
+# Remove Digital
+
+
+model_5 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                `Payment type` + sla + discount + NPS + TV + 
+                 `Content Marketing` + `Online marketing` + Affiliates + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter + product_analytic_verticalTelescope, 
+              data = train_m[, -1])
+
+summary(model_5)
+vif(model_5)
+
+
+# Remove Affiliates
+
+
+model_5 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                `Payment type` + sla + discount + NPS + TV + 
+                `Content Marketing` + `Online marketing`  + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter + product_analytic_verticalTelescope, 
+              data = train_m[, -1])
+
+summary(model_5)
+vif(model_5)
+
+# Remove TV
+
+
+model_6 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                `Payment type` + sla + discount + NPS  + 
+                `Content Marketing` + `Online marketing`  + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter + product_analytic_verticalTelescope, 
+              data = train_m[, -1])
+
+summary(model_6)
+vif(model_6)
+
+# Remove `Content Marketing` 
+
+
+model_7 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                `Payment type` + sla + discount + NPS  + 
+                 `Online marketing`  + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter + product_analytic_verticalTelescope, 
+              data = train_m[, -1])
+
+summary(model_7)
+vif(model_7)
+
+
+# Remove product_analytic_verticalTelescope
+
+
+model_8 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                `Payment type` + sla + discount + NPS  + 
+                `Online marketing`  + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap + 
+                product_analytic_verticalTeleconverter , 
+              data = train_m[, -1])
+
+summary(model_8)
+vif(model_8)
+
+
+# Remove product_analytic_verticalTeleconverter
+
+
+model_9 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                `Payment type` + sla + discount + NPS  + 
+                `Online marketing`  + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash + product_analytic_verticalFlashShoeAdapter + 
+                product_analytic_verticalLens + product_analytic_verticalStrap  
+                 , 
+              data = train_m[, -1])
+
+summary(model_9)
+vif(model_9)
+
+
+# Remove product_analytic_verticalFlashShoeAdapter
+
+
+model_10 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                `Payment type` + sla + discount + NPS  + 
+                `Online marketing`  + 
+                product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                product_analytic_verticalFlash  + 
+                product_analytic_verticalLens + product_analytic_verticalStrap  
+              , 
+              data = train_m[, -1])
+
+summary(model_10)
+vif(model_10)
+
+# Remove `Online marketing`
+
+
+model_11 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                 `Payment type` + sla + discount + NPS  + 
+                  
+                 product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                 product_analytic_verticalFlash  + 
+                 product_analytic_verticalLens + product_analytic_verticalStrap  
+               , 
+               data = train_m[, -1])
+
+summary(model_11)
+vif(model_11)
+
+# Remove NPS
+
+
+model_12 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                 `Payment type` + sla + discount   + 
+                 
+                 product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                 product_analytic_verticalFlash  + 
+                 product_analytic_verticalLens + product_analytic_verticalStrap  
+               , 
+               data = train_m[, -1])
+
+summary(model_12)
+vif(model_12)
+
+# Remove product_analytic_verticalStrap
+
+
+model_13 <- lm(formula = log(train_m$GMV) ~ `No.of units sold`  + 
+                 `Payment type` + sla + discount   + 
+                 
+                 product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                 product_analytic_verticalFlash  + 
+                 product_analytic_verticalLens   
+               , 
+               data = train_m[, -1])
+
+summary(model_13)
+vif(model_13)
+
+
+# Remove `No.of units sold`
+
+
+model_14 <- lm(formula = log(train_m$GMV) ~  
+                 `Payment type` + sla + discount   + 
+                 
+                 product_analytic_verticalBinoculars + product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                 product_analytic_verticalFlash  + 
+                 product_analytic_verticalLens   
+               , 
+               data = train_m[, -1])
+
+summary(model_14)
+vif(model_14)
+
+
+
+# Remove product_analytic_verticalBinoculars
+
+
+model_15 <- lm(formula = log(train_m$GMV) ~  
+                 `Payment type` + sla + discount   + 
+                 
+                  product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                 product_analytic_verticalFlash  + 
+                 product_analytic_verticalLens   
+               , 
+               data = train_m[, -1])
+
+summary(model_15)
+vif(model_15)
+
+
+# Remove `Payment type`
+
+
+model_16 <- lm(formula = log(train_m$GMV) ~  
+                  sla + discount   + 
+                 
+                 product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                 product_analytic_verticalFlash  + 
+                 product_analytic_verticalLens   
+               , 
+               data = train_m[, -1])
+
+summary(model_16)
+vif(model_16)
+
+# Remove product_analytic_verticalFlash
+
+
+model_17 <- lm(formula = log(train_m$GMV) ~  
+                 sla + discount   + 
+                 
+                 product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                  
+                 product_analytic_verticalLens   
+               , 
+               data = train_m[, -1])
+
+summary(model_17)
+vif(model_17)
+
+# Remove sla
+
+
+model_18 <- lm(formula = log(train_m$GMV) ~  
+                  discount   + 
+                 
+                 product_analytic_verticalCameraAccessory + 
+                 product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+                 product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+                 product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+                 product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+                 
+                 product_analytic_verticalLens   
+               , 
+               data = train_m[, -1])
+
+summary(model_18)
+vif(model_18)
+
+
+
+# Here discount + product_analytic_verticalCameraAccessory + 
+# product_analytic_verticalCameraBattery + product_analytic_verticalCameraBatteryCharger + 
+#  product_analytic_verticalCameraBatteryGrip + product_analytic_verticalCameraEyeCup + 
+#  product_analytic_verticalCameraLEDLight + product_analytic_verticalCameraRemoteControl + 
+#  product_analytic_verticalCameraTripod + product_analytic_verticalFilter + 
+#  product_analytic_verticalLens
+
+
+
+Predict_4 <- predict(model_18,test_m[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_m$test_GMV <- Predict_4
+
+#-------------------------------------------------------------------------------------------
+
+# calculate the test R2 
+
+cor(test_m$GMV,test_m$test_GMV)
+cor(test_m$GMV,test_m$test_GMV)^2
+
+# But from this we could not get the Marketing channels important for the business. Thus we now 
+# we will take only marketing channel in modelling. The training R^2 is 0.70 and test R^2 is 0.38
+
+
+# Here we couldn't get Marketing Channels in final model. Thus We would take only Marketing Channels
+# in Modelling.
+
+
+train_m1 <- train_m[,c(1,11:20)]
+test_m1 <- test_m[,c(1,11:20)]
+
+# Develop the first model 
+
+str(train_m1)
+
+model_1 <-lm(log(train_m1$GMV)~.,data=train_m1[,-1])
+summary(model_1)
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
 
 
 
 
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+
+model_2 <- lm(formula = log(train_m1$GMV) ~ `Total Investment` + Digital + 
+                Sponsorship + `Content Marketing` + `Online marketing` + 
+                Affiliates + SEM, data = train_m1[, -1])
+
+
+summary(model_2)
+vif(model_2)
+
+# Remove `Total Investment`
+
+model_3 <- lm(formula = log(train_m1$GMV) ~  Digital + 
+                Sponsorship + `Content Marketing` + `Online marketing` + 
+                Affiliates + SEM, data = train_m1[, -1])
+
+
+summary(model_3)
+vif(model_3)
+
+
+# Remove Sponsorship
+
+model_4 <- lm(formula = log(train_m1$GMV) ~  Digital + 
+                 `Content Marketing` + `Online marketing` + 
+                Affiliates + SEM, data = train_m1[, -1])
+
+
+summary(model_4)
+vif(model_4)
+
+# Remove Affiliates
+
+model_5 <- lm(formula = log(train_m1$GMV) ~  Digital + 
+                `Content Marketing` + `Online marketing` + 
+                 SEM, data = train_m1[, -1])
+
+
+summary(model_5)
+vif(model_5)
+
+
+# Remove SEM
+
+model_6 <- lm(formula = log(train_m1$GMV) ~  Digital + 
+                `Content Marketing` + `Online marketing` 
+                , data = train_m1[, -1])
+
+
+summary(model_6)
+vif(model_6)
 
 
 
 
+Predict_5 <- predict(model_6,test_m1[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_m1$test_GMV <- Predict_5
+
+#-------------------------------------------------------------------------------------------
+
+# calculate the test R2 
+
+cor(test_m1$GMV,test_m1$test_GMV)
+cor(test_m1$GMV,test_m1$test_GMV)^2
+
+# In the final model we got three marketing channels Digital, `Content Marketing`,`Online marketing` 
+# are major deciding variable, though the correlation  of  GMV to the any of the advertising channel 
+# is very weak as seen by low adjusted R^2 value.
+
+#------------------------------------------------------------------------------------------------------#
+# Modelling for homeAudio SUBCATEGORY
+#------------------------------------------------------------------------------------------------------#
+
+
+
+str(model_df1a)
+
+# Looking at the structure of model_df1 we see that all values are positive but few columns
+# are having "0"s in it, which we need to remove  from it for logarithmic transformation.
+
+range02 <- function(x){(x-mean(x))/sd(x)}
+
+
+model_df1a[,c(19:106)] <- range02(data.matrix(model_df1a[,c(19:106)]))
+
+str(model_df1a)
+
+# we see that though zeros have been removed from dataset, but negative is still there I would 
+# add "1" to the column so that my values comes out to be positive.
+
+model_df1a[,c(19:106)] <- model_df1a[,c(19:106)] + 1
+
+str(model_df1a)
+
+# Now dataset seems to be fine for logarithmic transformation.
+
+
+# Divide you data in 70:30 
+
+train_mh= (model_df1a[c(1:333),c(1,11:20)])
+
+test_mh = (model_df1a[c(334:475),c(1,11:20)])
+
+
+# Develop the first model 
+
+str(train_mh)
+
+model_1 <-lm(log(train_mh$GMV)~.,data=train_mh[,-1])
+summary(model_1)
+
+# adjusted R^2 comes out to be negative, thus we need to bring more significant variable into model.
+
+train_mh= (model_df1a[c(1:333),c(1,2,5,8:20)])
+
+test_mh = (model_df1a[c(334:475),c(1,2,5,8:20)])
+
+
+model_1 <-lm(log(train_mh$GMV)~.,data=train_mh[,-1])
+summary(model_1)
+
+
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
 
 
 
 
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+model_2 <- lm(formula = log(train_mh$GMV) ~ `No.of units sold` + `Payment type` + 
+                discount + NPS + `Total Investment` + TV + Sponsorship + 
+                `Online marketing`, data = train_mh[, -1])
+summary(model_2)
+vif(model_2)
+
+
+# Remove `No.of units sold`
+
+model_3 <- lm(formula = log(train_mh$GMV) ~  `Payment type` + 
+                discount + NPS + `Total Investment` + TV + Sponsorship + 
+                `Online marketing`, data = train_mh[, -1])
+summary(model_3)
+vif(model_3)
+
+
+# Remove NPS
+
+model_4 <- lm(formula = log(train_mh$GMV) ~  `Payment type` + 
+                discount  + `Total Investment` + TV + Sponsorship + 
+                `Online marketing`, data = train_mh[, -1])
+summary(model_4)
+vif(model_4)
+
+
+# Remove Sponsorship
+
+model_5 <- lm(formula = log(train_mh$GMV) ~  `Payment type` + 
+                discount  + `Total Investment` + TV  + 
+                `Online marketing`, data = train_mh[, -1])
+summary(model_5)
+vif(model_5)
+
+
+# Remove `Online marketing`
+
+model_6 <- lm(formula = log(train_mh$GMV) ~  `Payment type` + 
+                discount  + `Total Investment` + TV   
+                , data = train_mh[, -1])
+summary(model_6)
+vif(model_6)
+
+
+
+Predict_6 <- predict(model_6,test_mh[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_mh$test_GMV <- Predict_6
+
+#-------------------------------------------------------------------------------------------
+
+# calculate the test R2 
+
+cor(test_mh$GMV,test_mh$test_GMV)
+cor(test_mh$GMV,test_mh$test_GMV)^2
+
+# In the final model we got three variables`Payment type` ,discount,`Total Investment`,TV 
+ 
+# as major driving variable, The correlation between GMV and the independent variable found to be good.
+# The training adjusted R^2 and the test adjusted R^2 quite close. 
+# The adjusted R^2 of test data set ~ 0.61.
+
+# --------------------------------------------------------------------------------------------------#
+# Modelling for GamingAccessory SUBCATEGORY
+#---------------------------------------------------------------------------------------------------#
+
+str(model_df1b)
+
+# Looking at the structure of model_df1 we see that all values are positive but few columns
+# are having "0"s in it, which we need to remove  from it for logarithmic transformation.
+
+range02 <- function(x){(x-mean(x))/sd(x)}
+
+model_df1b <- model_df1b[,-7]
+
+model_df1b[,c(19:106)] <- range02(data.matrix(model_df1b[,c(19:106)]))
+
+str(model_df1a)
+
+# we see that though zeros have been removed from dataset, but negative is still there I would 
+# add "1" to the column so that my values comes out to be positive.
+
+model_df1b[,c(19:106)] <- model_df1b[,c(19:106)] + 1
+
+str(model_df1a)
+
+# Now dataset seems to be fine for logarithmic transformation.
+
+
+# Divide you data in 70:30 
+
+train_mg= (model_df1b[c(1:506),c(1,11:20)])
+
+test_mg = (model_df1b[c(507:723),c(1,11:20)])
+
+
+# Develop the first model 
+
+str(train_mg)
+
+model_1 <-lm(log(train_mg$GMV)~.,data=train_mg[,-1])
+summary(model_1)
+
+# adjusted R^2 comes out to be negative, thus we need to bring more significant variable into model.
+
+train_mg= (model_df1b[c(1:506),c(1,2,5,8:20)])
+
+test_mg = (model_df1b[c(507:723),c(1,2,5,8:20)])
+
+
+model_1 <-lm(log(train_mg$GMV)~.,data=train_mg[,-1])
+summary(model_1)
+
+
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
 
 
 
 
+#-------------------------------------------------------------------------------------------
 
 
+# Run the step object
+
+step
+
+model_2 <- lm(formula = log(train_mg$GMV) ~ `Payment type` + `Total Investment` + 
+                Digital + Sponsorship + `Content Marketing`, data = train_mg[, 
+                                                                             -1])
+summary(model_2)
+vif(model_2)
+
+
+# Remove Sponsorship
+
+model_3 <- lm(formula = log(train_mg$GMV) ~ `Payment type` + `Total Investment` + 
+                Digital +  `Content Marketing`, data = train_mg[, 
+                                                                             -1])
+summary(model_3)
+vif(model_3)
+
+
+# Remove `Total Investment`
+
+model_4 <- lm(formula = log(train_mg$GMV) ~ `Payment type`  + 
+                Digital +  `Content Marketing`, data = train_mg[, 
+                                                                -1])
+summary(model_4)
+vif(model_4)
+
+# Remove `Total Investment`
+
+model_5 <- lm(formula = log(train_mg$GMV) ~ `Payment type`  + 
+                Digital +  `Content Marketing`, data = train_mg[, 
+                                                                -1])
+summary(model_5)
+vif(model_5)
+
+
+
+Predict_7 <- predict(model_5,test_mg[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_mg$test_GMV <- Predict_7
+
+#-------------------------------------------------------------------------------------------
+
+# calculate the test R2 
+
+cor(test_mg$GMV,test_mg$test_GMV)
+cor(test_mg$GMV,test_mg$test_GMV)^2
+
+# In the final model we got three variables `Payment type`, Digital,`Content Marketing` 
+# as major driving variable, The correlation between GMV and the independent variable found to be fine.
+# The adjusted R^2 of test data set ~ 0.44.
 
