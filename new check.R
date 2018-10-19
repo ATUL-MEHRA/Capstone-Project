@@ -1982,9 +1982,9 @@ Model_dfd <- Model_dfd[,-c(8:16)]
 Model_dfd[1,c(9:22)] <- 0
 
 # Now we have prepared dataset for distributive model. We now apply lm function
-
+#_________________________________________________________________________________________________________________#
 # Lets take cameraAccessory sub product category.
-
+#_________________________________________________________________________________________________________________#
 
 camera_distributive <- filter(Model_dfd,product_analytic_sub_category %in% c("CameraAccessory") )
 
@@ -2544,3 +2544,486 @@ cor(test_dg$GMV,test_dg$test_GMV)^2
 # We finally get `No.of units sold` and Ad_digital as our driving levers to improve the revenue 
 # response for GamingAccessory sub product category. 
 # we get the train adjusted R^2 as 0.966 and the test dataset adjusted R^2 as 0.916.
+
+##################################################################################################################
+#                                   Multiplicative + Distributive Modelling                                     #
+##################################################################################################################
+
+# Multiplicative + Distributive Modelling is applying logarithm to the distributive modelling.
+
+# We already have prepared the dataset for the distributive model, bringing the same dataset for this modelling.
+
+
+
+#_______________________________________________________________________________________________________#
+
+# Lets take CameraAccessory sub product category.
+
+#_______________________________________________________________________________________________________#
+
+# Develop the first model 
+
+str(train_dc)
+
+model_1 <-lm(log(train_dc$GMV)~.,data=train_dc[,-1])
+summary(model_1)
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
+
+
+
+
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+model_2 <- lm(formula = log(train_dc$GMV) ~ `No.of units sold` + lag_special + 
+                Ad_Tot_investment + Ad_sponsorship + Ad_Content_Marketing + 
+                Ad_SEM, data = train_dc[, -1])
+summary(model_2)
+vif(model_2)
+
+# Remove Ad_SEM
+
+model_3 <- lm(formula = log(train_dc$GMV) ~ `No.of units sold` + lag_special + 
+                Ad_Tot_investment + Ad_sponsorship + Ad_Content_Marketing
+                , data = train_dc[, -1])
+summary(model_3)
+vif(model_3)
+
+# Remove Ad_Content_Marketing
+
+model_4 <- lm(formula = log(train_dc$GMV) ~ `No.of units sold` + lag_special + 
+                Ad_Tot_investment + Ad_sponsorship
+              , data = train_dc[, -1])
+summary(model_4)
+vif(model_4)
+
+# Remove Ad_Tot_investment
+
+model_5 <- lm(formula = log(train_dc$GMV) ~ `No.of units sold` + lag_special + 
+                 Ad_sponsorship
+              , data = train_dc[, -1])
+summary(model_5)
+vif(model_5)
+
+# Remove lag_special
+
+model_6 <- lm(formula = log(train_dc$GMV) ~ `No.of units sold`  + 
+                Ad_sponsorship
+              , data = train_dc[, -1])
+summary(model_6)
+vif(model_6)
+
+
+
+predict_11 <- predict(model_6, test_dc[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_dc$test_GMV <- predict_11
+
+# calculate test R^2
+
+cor(test_dc$GMV,test_dc$test_GMV)
+
+cor(test_dc$GMV,test_dc$test_GMV)^2
+
+
+
+# From here we get `No.of units sold` and Ad_sponsorship as our driving levers to improve the revenue 
+# response for CameraAccessory sub product category. 
+# we get the train adjusted R^2 as 0.66 and the test dataset adjusted R^2 as 0.81
+
+
+#_______________________________________________________________________________________________________#
+
+# Lets take HomeAudio sub product category.
+
+#_______________________________________________________________________________________________________#
+
+# Develop the first model 
+
+str(train_dh)
+
+model_1 <-lm(log(train_dh$GMV)~.,data=train_dh[,-1])
+summary(model_1)
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
+
+
+
+
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+
+model_2 <- lm(formula = log(train_dh$GMV) ~ `No.of units sold` + discount + 
+                `special day` + Other + lag_payment_type + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio, data = train_dh[, -1])
+
+summary(model_2)
+vif(model_2)
+
+
+# Remove lag_payment_type
+
+model_3 <- lm(formula = log(train_dh$GMV) ~ `No.of units sold` + discount + 
+                `special day` + Other  + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio, data = train_dh[, -1])
+
+summary(model_3)
+vif(model_3)
+
+# Remove Other
+
+model_4 <- lm(formula = log(train_dh$GMV) ~ `No.of units sold` + discount + 
+                `special day`   + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio, data = train_dh[, -1])
+
+summary(model_4)
+vif(model_4)
+
+# Remove `special day`
+
+model_5 <- lm(formula = log(train_dh$GMV) ~ `No.of units sold` + discount 
+                   + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio, data = train_dh[, -1])
+
+summary(model_5)
+vif(model_5)
+
+# Remove `No.of units sold`
+
+model_6 <- lm(formula = log(train_dh$GMV) ~  discount 
+              + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio, data = train_dh[, -1])
+
+summary(model_6)
+vif(model_6)
+
+# Remove Ad_Radio
+
+model_7 <- lm(formula = log(train_dh$GMV) ~  discount 
+              + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing , data = train_dh[, -1])
+
+summary(model_7)
+vif(model_7)
+
+
+# Remove Ad_Radio
+
+model_8 <- lm(formula = log(train_dh$GMV) ~  discount 
+              + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing , data = train_dh[, -1])
+
+summary(model_8)
+vif(model_8)
+
+# Remove Ad_online_marketing
+
+model_9 <- lm(formula = log(train_dh$GMV) ~  discount 
+              + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship  
+                 , data = train_dh[, -1])
+
+summary(model_9)
+vif(model_9)
+
+# Remove Ad_digital
+
+model_10 <- lm(formula = log(train_dh$GMV) ~  discount 
+               + lag_discount + 
+                 lag_special + Ad_Tot_investment  + Ad_sponsorship  
+               , data = train_dh[, -1])
+
+summary(model_10)
+vif(model_10)
+
+# Remove Ad_Tot_investment
+
+model_11 <- lm(formula = log(train_dh$GMV) ~  discount 
+               + lag_discount + 
+                 lag_special   + Ad_sponsorship  
+               , data = train_dh[, -1])
+
+summary(model_11)
+vif(model_11)
+
+
+predict_12 <- predict(model_11, test_dh[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_dh$test_GMV <- predict_12
+
+# calculate test R^2
+
+cor(test_dh$GMV,test_dh$test_GMV)
+
+cor(test_dh$GMV,test_dh$test_GMV)^2
+
+
+
+# From here we get discount, lag_discount, lag_special and Ad_sponsorship as our driving levers to improve
+# the revenue response for HomeAudio sub product category. 
+# we get the train adjusted R^2 as 0.87 and the test dataset adjusted R^2 as 0.87.
+
+
+
+
+#_______________________________________________________________________________________________________#
+
+# Lets take GamingAccessory sub product category.
+
+#_______________________________________________________________________________________________________#
+
+# Develop the first model 
+
+str(train_dg)
+
+model_1 <-lm(log(train_dg$GMV)~.,data=train_dg[,-1])
+summary(model_1)
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
+
+
+
+
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+model_2 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold` + `special day` + 
+                lag_no_of_unit_sold + lag_special + Ad_Tot_investment + Ad_TV + 
+                Ad_digital + Ad_sponsorship + Ad_Content_Marketing + Ad_online_marketing + 
+                Ad_affliate + Ad_SEM + Ad_Radio, data = train_dg[, -1])
+
+summary(model_2)
+vif(model_2)
+
+# Remove lag_special
+
+
+model_3 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold` + `special day` + 
+                lag_no_of_unit_sold  + Ad_Tot_investment + Ad_TV + 
+                Ad_digital + Ad_sponsorship + Ad_Content_Marketing + Ad_online_marketing + 
+                Ad_affliate + Ad_SEM + Ad_Radio, data = train_dg[, -1])
+
+summary(model_3)
+vif(model_3)
+
+# Remove `special day`
+
+
+model_4 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                lag_no_of_unit_sold  + Ad_Tot_investment + Ad_TV + 
+                Ad_digital + Ad_sponsorship + Ad_Content_Marketing + Ad_online_marketing + 
+                Ad_affliate + Ad_SEM + Ad_Radio, data = train_dg[, -1])
+
+summary(model_4)
+vif(model_4)
+
+
+# Remove Ad_Tot_investment
+
+
+model_5 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                lag_no_of_unit_sold    + Ad_TV +
+                Ad_digital + Ad_sponsorship + Ad_Content_Marketing + Ad_online_marketing + 
+                Ad_affliate + Ad_SEM + Ad_Radio, data = train_dg[, -1])
+
+summary(model_5)
+vif(model_5)
+
+# Remove Ad_sponsorship
+
+
+model_6 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                lag_no_of_unit_sold    + Ad_TV +
+                Ad_digital  + Ad_Content_Marketing + Ad_online_marketing + 
+                Ad_affliate + Ad_SEM + Ad_Radio, data = train_dg[, -1])
+
+summary(model_6)
+vif(model_6)
+
+
+# Remove Ad_Radio
+
+
+model_7 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                lag_no_of_unit_sold    + Ad_TV +
+                Ad_digital  + Ad_Content_Marketing + Ad_online_marketing + 
+                Ad_affliate + Ad_SEM , data = train_dg[, -1])
+
+summary(model_7)
+vif(model_7)
+
+
+# Remove Ad_affliate
+
+
+model_8 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                lag_no_of_unit_sold    + Ad_TV +
+                Ad_digital  + Ad_Content_Marketing + Ad_online_marketing + 
+                 Ad_SEM , data = train_dg[, -1])
+
+summary(model_8)
+vif(model_8)
+
+# Remove Ad_Content_Marketing
+
+
+model_9 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                lag_no_of_unit_sold    + Ad_TV +
+                Ad_digital   + Ad_online_marketing + 
+                Ad_SEM , data = train_dg[, -1])
+
+summary(model_9)
+vif(model_9)
+
+# Remove lag_no_of_unit_sold
+
+
+model_10 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                Ad_TV +
+                Ad_digital   + Ad_online_marketing + 
+                Ad_SEM , data = train_dg[, -1])
+
+summary(model_10)
+vif(model_10)
+
+# Remove Ad_online_marketing
+
+
+model_11 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                 Ad_TV +
+                 Ad_digital    + 
+                 Ad_SEM , data = train_dg[, -1])
+
+summary(model_11)
+vif(model_11)
+
+
+# Remove Ad_TV
+
+
+model_12 <- lm(formula = log(train_dg$GMV) ~ `No.of units sold`  + 
+                 
+                 Ad_digital    + 
+                 Ad_SEM , data = train_dg[, -1])
+
+summary(model_12)
+vif(model_12)
+
+
+predict_13 <- predict(model_12, test_dg[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_dg$test_GMV <- predict_13
+
+# calculate test R^2
+
+cor(test_dg$GMV,test_dg$test_GMV)
+
+cor(test_dg$GMV,test_dg$test_GMV)^2
+
+
+
+# From here we get discount, lag_discount, lag_special and Ad_sponsorship as our driving levers to improve
+# the revenue response for HomeAudio sub product category. 
+# we get the train adjusted R^2 as 0.74 and the test dataset adjusted R^2 as 0.878.
+
+
+
+##################################################################################################################
+#                                              Koyck Modelling                                                   #
+##################################################################################################################
+
+# Here we would take the lag of our target variable GMV as well as the lag of other non- marketing variables and
+# the adstock of marketing variables.
+
+# We already have prepared the dataset for the distributive model, bringing the same dataset for this modelling.
+
+
+
+#_______________________________________________________________________________________________________#
+
+# Lets take CameraAccessory sub product category.
+
+#_______________________________________________________________________________________________________#
+
+
+camera_koyck <- camera_distributive
+camera_koyck$lag_GMV <- Lag(camera_koyck$GMV, +1)
+
+camera_koyck$lag_GMV[1] <- 0
+
+# Divide you data in 70:30 
+
+train_kc= camera_koyck[c(1:35),]
+
+test_kc = camera_koyck[c(36:52),]
+
+
+# Develop the first model 
+
+str(train_kc)
+
+model_1 <-lm(train_kc$GMV~.,data=train_kc[,-1])
+summary(model_1)
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
+
+
+
+
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+
