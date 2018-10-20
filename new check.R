@@ -3027,3 +3027,566 @@ step <- stepAIC(model_1, direction="both")
 step
 
 
+model_2 <- lm(formula = train_kc$GMV ~ `No.of units sold` + `Payment type` + 
+                discount + `special day` + lag_discount + Ad_TV + Ad_digital + 
+                Ad_sponsorship + Ad_Content_Marketing + Ad_SEM + lag_GMV, 
+              data = train_kc[, -1])
+
+summary(model_2)
+
+vif(model_2)
+
+# Remove `No.of units sold`
+
+model_3 <- lm(formula = train_kc$GMV ~  `Payment type` + 
+                discount + `special day` + lag_discount + Ad_TV + Ad_digital + 
+                Ad_sponsorship + Ad_Content_Marketing + Ad_SEM + lag_GMV, 
+              data = train_kc[, -1])
+
+summary(model_3)
+
+vif(model_3)
+
+
+# Remove Ad_sponsorship
+
+model_4 <- lm(formula = train_kc$GMV ~  `Payment type` + 
+                discount + `special day` + lag_discount + Ad_TV + Ad_digital + 
+                 Ad_Content_Marketing + Ad_SEM + lag_GMV, 
+              data = train_kc[, -1])
+
+summary(model_4)
+
+vif(model_4)
+
+
+# Remove Ad_digital
+
+model_5 <- lm(formula = train_kc$GMV ~  `Payment type` + 
+                discount + `special day` + lag_discount + Ad_TV  + 
+                Ad_Content_Marketing + Ad_SEM + lag_GMV, 
+              data = train_kc[, -1])
+
+summary(model_5)
+
+vif(model_5)
+
+# Remove `special day`
+
+model_6 <- lm(formula = train_kc$GMV ~  `Payment type` + 
+                discount  + lag_discount + Ad_TV  + 
+                Ad_Content_Marketing + Ad_SEM + lag_GMV, 
+              data = train_kc[, -1])
+
+summary(model_6)
+
+vif(model_6)
+
+# Remove `Payment type`
+
+model_7 <- lm(formula = train_kc$GMV ~   
+                discount  + lag_discount + Ad_TV  + 
+                Ad_Content_Marketing + Ad_SEM + lag_GMV, 
+              data = train_kc[, -1])
+
+summary(model_7)
+
+vif(model_7)
+
+
+# Remove lag_GMV
+
+model_8 <- lm(formula = train_kc$GMV ~   
+                discount  + lag_discount + Ad_TV  + 
+                Ad_Content_Marketing + Ad_SEM , 
+              data = train_kc[, -1])
+
+summary(model_8)
+
+vif(model_8)
+
+# Remove lag_discount
+
+model_9 <- lm(formula = train_kc$GMV ~   
+                discount   + Ad_TV  + 
+                Ad_Content_Marketing + Ad_SEM , 
+              data = train_kc[, -1])
+
+summary(model_9)
+
+vif(model_9)
+
+# Remove Ad_SEM
+
+model_10 <- lm(formula = train_kc$GMV ~   
+                discount   + Ad_TV  + 
+                Ad_Content_Marketing  , 
+              data = train_kc[, -1])
+
+summary(model_10)
+
+vif(model_10)
+
+
+predict_14 <- predict(model_10, test_kc[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_kc$test_GMV <- predict_14
+
+# calculate test R^2
+
+cor(test_kc$GMV,test_kc$test_GMV)
+
+cor(test_kc$GMV,test_kc$test_GMV)^2
+
+
+
+# From here we get discount, Ad_TV and Ad_Content_Marketing as our driving levers to improve
+# the revenue response for CameraAccessary sub product category. 
+# we get the train adjusted R^2 as 0.898 and the test dataset adjusted R^2 as 0.920
+
+
+#_______________________________________________________________________________________________________#
+
+# Lets take HomeAudio sub product category.
+
+#_______________________________________________________________________________________________________#
+
+
+Home_koyck <- HomeAudio_distributive
+Home_koyck$lag_GMV <- Lag(Home_koyck$GMV, +1)
+
+Home_koyck$lag_GMV[1] <- 0
+
+# Divide you data in 70:30 
+
+train_kh= Home_koyck[c(1:35),]
+
+test_kh = Home_koyck[c(36:51),]
+
+
+# Develop the first model 
+
+str(train_kh)
+
+model_1 <-lm(train_kh$GMV~.,data=train_kh[,-1])
+summary(model_1)
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
+
+
+
+
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+model_2 <- lm(formula = train_kh$GMV ~ `No.of units sold` + discount + `special day` + 
+                Other + lag_no_of_unit_sold + lag_payment_type + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_2)                                                                          
+vif(model_2)
+
+
+# Remove lag_payment_type
+
+model_3 <- lm(formula = train_kh$GMV ~ `No.of units sold` + discount + `special day` + 
+                Other + lag_no_of_unit_sold  + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_3)                                                                          
+vif(model_3)
+
+
+# Remove lag_no_of_unit_sold
+
+model_4 <- lm(formula = train_kh$GMV ~ `No.of units sold` + discount + `special day` + 
+                Other   + lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_4)                                                                          
+vif(model_4)
+
+
+# Remove Other
+
+model_5 <- lm(formula = train_kh$GMV ~ `No.of units sold` + discount + `special day` + 
+                 lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_5)                                                                          
+vif(model_5)
+
+# Remove Ad_online_marketing
+
+model_6 <- lm(formula = train_kh$GMV ~ `No.of units sold` + discount + `special day` + 
+                lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                 Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_6)                                                                          
+vif(model_6)
+
+# Remove `No.of units sold`
+
+model_7 <- lm(formula = train_kh$GMV ~  discount + `special day` + 
+                lag_discount + 
+                lag_special + Ad_Tot_investment + Ad_digital + Ad_sponsorship + 
+                Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_7)                                                                          
+vif(model_7)
+
+
+# Remove Ad_Tot_investment
+
+model_8 <- lm(formula = train_kh$GMV ~  discount + `special day` + 
+                lag_discount + 
+                lag_special  + Ad_digital + Ad_sponsorship + 
+                Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_8)                                                                          
+vif(model_8)
+
+
+# Remove Ad_sponsorship
+
+model_9 <- lm(formula = train_kh$GMV ~  discount + `special day` + 
+                lag_discount + 
+                lag_special  + Ad_digital  + 
+                Ad_Radio + lag_GMV, data = train_kh[, -1])
+
+summary(model_9)                                                                          
+vif(model_9)
+
+
+# Remove Ad_Radio
+
+model_10 <- lm(formula = train_kh$GMV ~  discount + `special day` + 
+                lag_discount + 
+                lag_special  + Ad_digital  + 
+                 lag_GMV, data = train_kh[, -1])
+
+summary(model_10)                                                                          
+vif(model_10)
+
+
+# Remove `special day`
+
+model_11 <- lm(formula = train_kh$GMV ~  discount  + 
+                 lag_discount + 
+                 lag_special  + Ad_digital  + 
+                 lag_GMV, data = train_kh[, -1])
+
+summary(model_11)                                                                          
+vif(model_11)
+
+
+
+predict_15 <- predict(model_11, test_kh[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_kh$test_GMV <- predict_15
+
+# calculate test R^2
+
+cor(test_kh$GMV,test_kh$test_GMV)
+
+cor(test_kh$GMV,test_kh$test_GMV)^2
+
+
+
+# From here we get , discount, `special day`, lag_discount, lag_special, Ad_digital and lag_GMV 
+# as our driving levers to improve the revenue response for HomeAudio sub product category. 
+# we get the train adjusted R^2 as 0.880 and the test dataset adjusted R^2 as 0.833
+
+
+#_______________________________________________________________________________________________________#
+
+# Lets take GamingAccessory sub product category.
+
+#_______________________________________________________________________________________________________#
+
+
+Gaming_koyck <- GamingAccessory_distributive
+Gaming_koyck$lag_GMV <- Lag(Gaming_koyck$GMV, +1)
+
+Gaming_koyck$lag_GMV[1] <- 0
+
+# Divide you data in 70:30 
+
+train_kg= Gaming_koyck[c(1:35),]
+
+test_kg = Gaming_koyck[c(36:53),]
+
+
+# Develop the first model 
+
+str(train_kg)
+
+model_1 <-lm(train_kg$GMV~.,data=train_kg[,-1])
+summary(model_1)
+
+#-------------------------------------------------------------------------------------------
+
+# Apply the stepwise approach
+
+step <- stepAIC(model_1, direction="both")
+
+
+
+
+#-------------------------------------------------------------------------------------------
+
+
+# Run the step object
+
+step
+
+
+model_2 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount + `special day` + 
+                Other + lag_no_of_unit_sold + lag_payment_type + lag_discount + 
+                Ad_Tot_investment + Ad_TV + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio + lag_GMV, 
+              data = train_kg[, -1])
+
+summary(model_2)
+vif(model_2)
+
+
+# Remove lag_discount
+
+
+model_3 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount + `special day` + 
+                Other + lag_no_of_unit_sold + lag_payment_type  + 
+                Ad_Tot_investment + Ad_TV + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio + lag_GMV, 
+              data = train_kg[, -1])
+
+summary(model_3)
+vif(model_3)
+
+
+# Remove `special day`
+
+
+model_4 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                Other + lag_no_of_unit_sold + lag_payment_type  + 
+                Ad_Tot_investment + Ad_TV + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio + lag_GMV, 
+              data = train_kg[, -1])
+
+summary(model_4)
+vif(model_4)
+
+
+# Remove lag_payment_type
+
+
+model_5 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                Other + lag_no_of_unit_sold   + 
+                Ad_Tot_investment + Ad_TV + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio + lag_GMV, 
+              data = train_kg[, -1])
+
+summary(model_5)
+vif(model_5)
+
+
+# Remove Other
+
+
+model_6 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                 lag_no_of_unit_sold   + 
+                Ad_Tot_investment + Ad_TV + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio + lag_GMV, 
+              data = train_kg[, -1])
+
+summary(model_6)
+vif(model_6)
+
+# Remove lag_GMV
+
+
+model_7 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                lag_no_of_unit_sold   + 
+                Ad_Tot_investment + Ad_TV + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio , 
+              data = train_kg[, -1])
+
+summary(model_7)
+vif(model_7)
+
+
+
+# Remove lag_GMV
+
+
+model_8 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                lag_no_of_unit_sold   + 
+                Ad_Tot_investment + Ad_TV + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio , 
+              data = train_kg[, -1])
+
+summary(model_8)
+vif(model_8)
+
+
+# Remove Ad_TV
+
+
+model_9 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                lag_no_of_unit_sold   + 
+                Ad_Tot_investment  + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM + Ad_Radio , 
+              data = train_kg[, -1])
+
+summary(model_9)
+vif(model_9)
+
+
+# Remove Ad_Radio
+
+
+model_10 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                lag_no_of_unit_sold   + 
+                Ad_Tot_investment  + Ad_digital + Ad_sponsorship + 
+                Ad_online_marketing + Ad_affliate + Ad_SEM  , 
+              data = train_kg[, -1])
+
+summary(model_10)
+vif(model_10)
+
+
+# Remove lag_no_of_unit_sold
+
+
+model_11 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                    
+                 Ad_Tot_investment  + Ad_digital + Ad_sponsorship + 
+                 Ad_online_marketing + Ad_affliate + Ad_SEM  , 
+               data = train_kg[, -1])
+
+summary(model_11)
+vif(model_11)
+
+# Remove Ad_SEM
+
+
+model_12 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                 
+                 Ad_Tot_investment  + Ad_digital + Ad_sponsorship + 
+                 Ad_online_marketing + Ad_affliate   , 
+               data = train_kg[, -1])
+
+summary(model_12)
+vif(model_12)
+
+
+# Remove Ad_affliate
+
+
+model_13 <- lm(formula = train_kg$GMV ~ `No.of units sold` + discount  + 
+                 
+                 Ad_Tot_investment  + Ad_digital + Ad_sponsorship + 
+                 Ad_online_marketing    , 
+               data = train_kg[, -1])
+
+summary(model_13)
+vif(model_13)
+
+
+# Remove discount
+
+
+model_14 <- lm(formula = train_kg$GMV ~ `No.of units sold` +    
+                 
+                 Ad_Tot_investment  + Ad_digital + Ad_sponsorship + 
+                 Ad_online_marketing    , 
+               data = train_kg[, -1])
+
+summary(model_14)
+vif(model_14)
+
+
+# Remove Ad_online_marketing
+
+
+model_15 <- lm(formula = train_kg$GMV ~ `No.of units sold` +    
+                 
+                 Ad_Tot_investment  + Ad_digital + Ad_sponsorship  
+                     , 
+               data = train_kg[, -1])
+
+summary(model_15)
+vif(model_15)
+
+
+# Remove Ad_sponsorship
+
+
+model_16 <- lm(formula = train_kg$GMV ~ `No.of units sold` +    
+                 
+                 Ad_Tot_investment  + Ad_digital   
+               , 
+               data = train_kg[, -1])
+
+summary(model_16)
+vif(model_16)
+
+
+# Remove Ad_Tot_investment
+
+
+model_17 <- lm(formula = train_kg$GMV ~ `No.of units sold` +    
+                 
+                  Ad_digital   
+               , 
+               data = train_kg[, -1])
+
+summary(model_17)
+vif(model_17)
+
+
+
+predict_16 <- predict(model_17, test_kg[,-1])
+
+#-------------------------------------------------------------------------------------------
+
+# Add a new column "test_GMV" into the test dataset
+
+test_kg$test_GMV <- predict_16
+
+# calculate test R^2
+
+cor(test_kg$GMV,test_kg$test_GMV)
+
+cor(test_kg$GMV,test_kg$test_GMV)^2
+
+
+
+# From here we get `No.of units sold` and Ad_digital as our driving levers to improve the revenue response
+# for GamingAccessory sub product category. 
+# we get the train adjusted R^2 as 0.967 and the test dataset adjusted R^2 as 0.915
+
+
+
+
