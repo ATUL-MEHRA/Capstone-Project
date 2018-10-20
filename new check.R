@@ -670,9 +670,8 @@ cor(test1$GMV,test1$test_GMV)^2
 
 # In final model we get sla, discount, CameraBatteryGrip, CameraLEDLight,
 
-# CameraTripod , ExtensionTube,Lens, Teleconverter as our driving variable in determiing the GMV.
-
-# getting SAdjusted R^2 as 0.42 and R as 0.65
+# CameraTripod , ExtensionTube,Lens, Teleconverter as our driving variable in determining the GMV for
+# the CameraAccessory sub category. we got training Adjusted R^2 as 0.615 and test adjusted R^2 as 0.42
 
 
 # Modelling for HomeAudio SUBCATEGORY
@@ -921,10 +920,11 @@ cor(test2$GMV,test2$test_GMV)^2
 
 # In final model we get `No.of units sold`+discount + product_analytic_verticalBoomBox + 
 # product_analytic_verticalDJController + product_analytic_verticalHiFiSystem + 
-# product_analytic_verticalKaraokePlayer + product_analytic_verticalSoundMixer as our driving variable in determiing the GMV.
+# product_analytic_verticalKaraokePlayer + product_analytic_verticalSoundMixer as our driving variable in 
+# determiing the GMV for HomeAudio subcategory.
 # here we have considered the basic linear model whereas we have timestamped data available we can work 
 # over the adstock effect and find the driving variables in determining the GMV.
-# geeting 0.90 as adjusted R^2 and R as 0.95
+# getting 0.89 as training adjusted R^2 and 0.90 as Test data R^2.
 
 
 
@@ -1112,7 +1112,9 @@ cor(test3$GMV,test3$test_GMV)^2
 
 # In final model we get `Payment type` , MRP, discount`, product_analytic_verticalGamePad as our driving variable in determiing the GMV.
 # here we have considered the basic linear model whereas we have timestamped data available we can work 
-# over the adstock effect and find the driving variables in determining the GMV.
+# over the adstock effect and find the driving variables in determining the GMV. Here we got Adjusted R^2 as 1
+# for test and train dataset. The presence of MRP variable making it overfit. If we remove the MRP variable it
+# would leads to a very low Adjusted R^2 near to Zero.
 
 ##################################################################################################
 # Multiplicative , Distributive, Koyck and Multiplicative + Distributive model
@@ -1559,7 +1561,7 @@ cor(test_m$GMV,test_m$test_GMV)
 cor(test_m$GMV,test_m$test_GMV)^2
 
 # But from this we could not get the Marketing channels important for the business. Thus we now 
-# we will take only marketing channel in modelling. The training R^2 is 0.70 and test R^2 is 0.38
+# we will take only marketing channel in modelling. The training R^2 is 0.73 and test R^2 is 0.38
 
 
 # Here we couldn't get Marketing Channels in final model. Thus We would take only Marketing Channels
@@ -1662,8 +1664,9 @@ cor(test_m1$GMV,test_m1$test_GMV)
 cor(test_m1$GMV,test_m1$test_GMV)^2
 
 # In the final model we got three marketing channels Digital, `Content Marketing`,`Online marketing` 
-# are major deciding variable, though the correlation  of  GMV to the any of the advertising channel 
-# is very weak as seen by low adjusted R^2 value.
+# are major deciding variable for CameraAccessory sub category, though the correlation of  GMV to the any 
+# of the advertising channel is very weak as seen by low adjusted R^2 value. Training adjusted R^2 as 0.0065
+# and test data adjusted R^2 as 0.00096
 
 #------------------------------------------------------------------------------------------------------#
 # Modelling for homeAudio SUBCATEGORY
@@ -1796,9 +1799,9 @@ cor(test_mh$GMV,test_mh$test_GMV)^2
 
 # In the final model we got three variables`Payment type` ,discount,`Total Investment`,TV 
 
-# as major driving variable, The correlation between GMV and the independent variable found to be good.
-# The training adjusted R^2 and the test adjusted R^2 quite close. 
-# The adjusted R^2 of test data set ~ 0.61.
+# as major driving variable for HomeAudio sub category, The correlation between GMV and the independent 
+# variable found to be good.The training adjusted R^2 and the test adjusted R^2 quite close. 
+# The adjusted R^2 of train data set as 0.55 and adjusted R^2 for test data set ~ 0.60.
 
 # --------------------------------------------------------------------------------------------------#
 # Modelling for GamingAccessory SUBCATEGORY
@@ -1919,9 +1922,9 @@ cor(test_mg$GMV,test_mg$test_GMV)
 cor(test_mg$GMV,test_mg$test_GMV)^2
 
 # In the final model we got three variables `Payment type`, Digital,`Content Marketing` 
-# as major driving variable, The correlation between GMV and the independent variable found to be fine.
-# The adjusted R^2 of test data set ~ 0.44.
-
+# as major driving variable for GamingAccessory, The correlation between GMV and the independent variable
+# found to be very low.
+# The adjusted R^2 of test data set 0.019 and train data set of R^2 as 0.070
 
 #######################################################################################################
 #                                        Distributive Model                                           #
@@ -2120,7 +2123,8 @@ cor(test_dc$GMV,test_dc$test_GMV)^2
 
 
 # We finally get discount, Ad_TV and Ad_Content_Marketing as our driving levers to improve the revenue 
-# response for cameraAccessory sub product category. we get the train adjusted R^2 as 0.89 and the test dataset adjusted R^2 as 0.92.
+# response for cameraAccessory sub product category. we get the train adjusted R^2 as 0.89 and the test 
+# dataset adjusted R^2 as 0.92.
 
 
 
@@ -2289,7 +2293,7 @@ cor(test_dh$GMV,test_dh$test_GMV)
 cor(test_dh$GMV,test_dh$test_GMV)^2
 
 # We finally get `No.of units sold`, discount, Other and Ad_Radio as our driving levers to improve the revenue 
-# response for cameraAccessory sub product category. 
+# response for HomeAudio sub product category. 
 # we get the train adjusted R^2 as 0.83 and the test dataset adjusted R^2 as 0.92.
 
 
@@ -3314,9 +3318,10 @@ cor(test_kh$GMV,test_kh$test_GMV)^2
 
 
 
-# From here we get , discount, `special day`, lag_discount, lag_special, Ad_digital and lag_GMV 
+# From here we get discount, `special day`, lag_discount, lag_special, Ad_digital and lag_GMV 
 # as our driving levers to improve the revenue response for HomeAudio sub product category. 
 # we get the train adjusted R^2 as 0.880 and the test dataset adjusted R^2 as 0.833
+
 
 
 #_______________________________________________________________________________________________________#
